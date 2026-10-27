@@ -7,491 +7,220 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root{
-    --paper:#F8F6F2;
-    --ink:#1B1815;
-    --ink-soft:#6B655D;
-    --line:#E4DFD6;
-    --maroon:#8C1F3A;
-    --maroon-deep:#6E1830;
-    --maroon-wash:#F6E9EC;
-    --ok:#2F6E4E;
-    --ok-wash:#E8F3EC;
-    --err:#B23B2E;
-    --err-wash:#FBEAE7;
-    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
-    --sans: "Noto Sans Bengali", -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:var(--sans);
-    line-height:1.6;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:720px;margin:0 auto;padding:48px 20px 96px;}
-
-  header.page-head{margin-bottom:28px;}
-  .eyebrow{
-    font-family:var(--mono);
-    font-size:12px;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:var(--maroon);
-    margin:0 0 8px;
-  }
-  h1{font-size:25px;margin:0 0 8px;letter-spacing:-.01em;}
-  .sub{color:var(--ink-soft);font-size:15px;margin:0;max-width:54ch;}
-
-  .card{
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:22px 22px 24px;
-    margin-bottom:16px;
-  }
-  .card h2{
-    font-size:14.5px;
-    margin:0 0 4px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .step-num{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    width:20px;height:20px;
-    border-radius:50%;
-    background:var(--ink);
-    color:#fff;
-    font-size:11px;
-    font-family:var(--mono);
-    flex:none;
-  }
-  .card p.hint{color:var(--ink-soft);font-size:13.5px;margin:2px 0 14px;}
-
-  /* Firecrawl callout */
-  .firecrawl-card{
-    background:var(--maroon-wash);
-    border:1px solid #E7C9D0;
-  }
-  .firecrawl-card h2{color:var(--maroon-deep);}
-  .fc-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
-  .fc-text p{margin:2px 0 0;color:#5E3242;font-size:13.5px;max-width:48ch;}
-  .fc-link{
-    flex:none;
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    background:var(--maroon);
-    color:#fff;
-    text-decoration:none;
-    padding:9px 16px;
-    border-radius:7px;
-    font-size:13.5px;
-    font-weight:600;
-    white-space:nowrap;
-  }
-  .fc-link:hover{background:var(--maroon-deep);}
-
-  details.guide{margin-top:14px;}
-  details.guide summary{
-    cursor:pointer;
-    font-size:13px;
-    font-weight:600;
-    color:var(--maroon-deep);
-    list-style:none;
-  }
-  details.guide summary::-webkit-details-marker{display:none;}
-  details.guide summary:before{content:"▸ ";}
-  details.guide[open] summary:before{content:"▾ ";}
-  details.guide .guide-body{
-    margin-top:10px;
-    font-size:13.5px;
-    color:#5E3242;
-  }
-  details.guide ol{margin:6px 0 10px;padding-left:20px;}
-  details.guide li{margin-bottom:5px;}
-  .code-block{
-    background:#3A1420;
-    color:#F3D9DF;
-    font-family:var(--mono);
-    font-size:12px;
-    padding:12px 14px;
-    border-radius:6px;
-    overflow-x:auto;
-    white-space:pre;
-    margin:8px 0;
-  }
-
-  /* generic guide (non-firecrawl) */
-  .card:not(.firecrawl-card) details.guide summary{color:var(--maroon);}
-  .card:not(.firecrawl-card) details.guide .guide-body{color:var(--ink-soft);}
-  .card:not(.firecrawl-card) .code-block{background:#232019;color:#EFE9DE;}
-
-  label.field-label{
-    display:block;
-    font-size:13px;
-    font-weight:600;
-    margin-bottom:6px;
-  }
-  input[type=password], input[type=text], textarea{
-    width:100%;
-    border:1px solid var(--line);
-    border-radius:7px;
-    padding:10px 12px;
-    font-family:var(--mono);
-    font-size:13px;
-    background:#FCFBF9;
-    color:var(--ink);
-  }
-  input[type=password]:focus, input[type=text]:focus, textarea:focus{
-    outline:2px solid var(--maroon);
-    outline-offset:1px;
-    border-color:var(--maroon);
-  }
-  textarea{min-height:120px;resize:vertical;line-height:1.6;}
-
-  .token-row{display:flex;gap:8px;align-items:stretch;}
-  .token-row input{flex:1;}
-  .ghost-btn{
-    border:1px solid var(--line);
-    background:#fff;
-    color:var(--ink);
-    border-radius:7px;
-    padding:0 14px;
-    font-size:13px;
-    font-weight:600;
-    cursor:pointer;
-    white-space:nowrap;
-    font-family:var(--sans);
-  }
-  .ghost-btn:hover{border-color:var(--ink);}
-
-  .or-divider{
-    display:flex;align-items:center;gap:10px;
-    margin:14px 0;color:var(--ink-soft);font-size:12px;
-    font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;
-  }
-  .or-divider:before, .or-divider:after{content:"";flex:1;height:1px;background:var(--line);}
-
-  .file-drop{
-    border:1.5px dashed var(--line);
-    border-radius:8px;
-    padding:16px;
-    text-align:center;
-    font-size:13px;
-    color:var(--ink-soft);
-    cursor:pointer;
-    display:block;
-  }
-  .file-drop:hover{border-color:var(--maroon);color:var(--maroon-deep);}
-  .file-drop input{display:none;}
-
-  .found-line{
-    margin-top:12px;
-    font-size:13px;
-    color:var(--ink-soft);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-  .found-line strong{color:var(--ink);}
-  .clear-link{
-    background:none;border:none;color:var(--maroon);
-    font-size:12.5px;cursor:pointer;padding:0;font-weight:600;
-    font-family:var(--sans);
-  }
-
-  .primary-btn{
-    width:100%;
-    background:var(--ink);
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    padding:13px 18px;
-    font-size:14.5px;
-    font-weight:700;
-    cursor:pointer;
-    margin-top:6px;
-    font-family:var(--sans);
-  }
-  .primary-btn:hover:not(:disabled){background:var(--maroon-deep);}
-  .primary-btn:disabled{background:#D8D3C8;color:#8A8477;cursor:not-allowed;}
-
-  .progress-wrap{margin-top:14px;display:none;}
-  .progress-wrap.active{display:block;}
-  .progress-label{font-size:12.5px;color:var(--ink-soft);margin-bottom:6px;font-family:var(--mono);}
-  .progress-track{height:6px;background:var(--line);border-radius:99px;overflow:hidden;}
-  .progress-fill{height:100%;width:0%;background:var(--maroon);transition:width .2s ease;}
-
-  .banner{
-    border-radius:8px;
-    padding:11px 14px;
-    font-size:13px;
-    margin-top:14px;
-    display:none;
-  }
-  .banner.active{display:block;}
-  .banner.err{background:var(--err-wash);color:var(--err);border:1px solid #EFC7C0;}
-  .banner.warn{background:#FBF3E4;color:#8A5A12;border:1px solid #F0DBAE;}
-
-  .results-head{
-    display:flex;align-items:center;justify-content:space-between;
-    margin-bottom:10px;flex-wrap:wrap;gap:8px;
-  }
-  .results-head h2{margin:0;}
-  .results-actions{display:flex;gap:8px;}
-  .results-actions button{
-    font-size:12.5px;padding:7px 12px;border-radius:6px;
-    border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600;
-    font-family:var(--sans);
-  }
-  .results-actions button:hover{border-color:var(--ink);}
-
-  table{width:100%;border-collapse:collapse;font-size:12.5px;}
-  thead th{
-    text-align:left;color:var(--ink-soft);font-weight:600;
-    font-size:11px;text-transform:uppercase;letter-spacing:.04em;
-    padding:0 8px 8px;border-bottom:1px solid var(--line);
-    font-family:var(--sans);
-  }
-  tbody td{
-    padding:9px 8px;
-    border-bottom:1px solid #F0EDE6;
-    font-family:var(--mono);
-    vertical-align:top;
-    word-break:break-all;
-  }
-  tbody tr:last-child td{border-bottom:none;}
-  .url-cell{max-width:220px;}
-  .status-pill{
-    display:inline-block;
-    padding:2px 8px;
-    border-radius:99px;
-    font-size:11px;
-    font-family:var(--sans);
-    font-weight:600;
-  }
-  .status-pill.pending{background:#F0EDE6;color:var(--ink-soft);}
-  .status-pill.ok{background:var(--ok-wash);color:var(--ok);}
-  .status-pill.error{background:var(--err-wash);color:var(--err);}
-  .aff-link{color:var(--maroon);text-decoration:none;font-weight:600;}
-  .aff-link:hover{text-decoration:underline;}
-  .row-copy{
-    background:none;border:none;cursor:pointer;color:var(--ink-soft);
-    font-family:var(--sans);font-size:11px;padding:0;margin-left:6px;
-  }
-  .row-copy:hover{color:var(--maroon);}
-
-  .results-scroll{max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;}
-  .results-scroll table{margin:0;}
-  .results-scroll thead th{position:sticky;top:0;background:#fff;}
-
-  footer{margin-top:32px;text-align:center;color:var(--ink-soft);font-size:12px;}
-  footer a{color:var(--ink-soft);}
-
-  .privacy-note{
-    font-size:12px;color:var(--ink-soft);margin-top:10px;
-    display:flex;gap:6px;align-items:flex-start;
-  }
+:root{--paper:#F8F6F2;--ink:#1B1815;--soft:#6B655D;--line:#E4DFD6;--maroon:#8C1F3A;--deep:#6E1830;--wash:#F6E9EC;--ok:#2F6E4E;--okw:#E8F3EC;--err:#B23B2E;--errw:#FBEAE7;--mono:ui-monospace,Menlo,Consolas,monospace;--sans:"Noto Sans Bengali",-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding:40px 16px 80px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--maroon);margin:0 0 8px}
+h1{font-size:24px;margin:0 0 8px}
+.sub{color:var(--soft);font-size:15px;margin:0 0 24px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:11px;font-family:var(--mono);flex:none}
+.hint{color:var(--soft);font-size:13.5px;margin:2px 0 14px}
+.fc{background:var(--wash);border-color:#E7C9D0}
+.fc h2{color:var(--deep)}
+.fc p{margin:2px 0 10px;color:#5E3242;font-size:13.5px}
+.fc-link{display:inline-block;background:var(--maroon);color:#fff;text-decoration:none;padding:9px 16px;border-radius:7px;font-size:13.5px;font-weight:600}
+details{margin-top:12px}
+summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--maroon)}
+.gb{margin-top:10px;font-size:13.5px;color:var(--soft)}
+.gb ol{padding-left:20px;margin:6px 0}
+.gb li{margin-bottom:5px}
+code{font-family:var(--mono);font-size:12px;background:#F0EDE6;padding:1px 5px;border-radius:4px}
+.code-block{background:#232019;color:#EFE9DE;font-family:var(--mono);font-size:12px;padding:12px;border-radius:6px;overflow-x:auto;white-space:pre;margin:8px 0}
+label.fl{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+input[type=password],input[type=text],textarea{width:100%;border:1px solid var(--line);border-radius:7px;padding:10px 12px;font-family:var(--mono);font-size:13px;background:#FCFBF9;color:var(--ink)}
+input:focus,textarea:focus{outline:2px solid var(--maroon);outline-offset:1px}
+textarea{min-height:130px;resize:vertical;line-height:1.6}
+.trow{display:flex;gap:8px}
+.trow input{flex:1}
+.ghost{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;padding:0 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.or{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--soft);font-size:12px}
+.or:before,.or:after{content:"";flex:1;height:1px;background:var(--line)}
+.drop{border:1.5px dashed var(--line);border-radius:8px;padding:16px;text-align:center;font-size:13px;color:var(--soft);cursor:pointer;display:block}
+.drop input{display:none}
+.found{margin-top:12px;font-size:13px;color:var(--soft);display:flex;justify-content:space-between}
+.found strong{color:var(--ink)}
+.clear{background:none;border:none;color:var(--maroon);font-size:12.5px;cursor:pointer;font-weight:600;font-family:var(--sans)}
+.primary{width:100%;background:var(--ink);color:#fff;border:none;border-radius:8px;padding:13px 18px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:var(--sans)}
+.primary:hover:not(:disabled){background:var(--deep)}
+.primary:disabled{background:#D8D3C8;color:#8A8477;cursor:not-allowed}
+.pw{margin-top:14px;display:none}
+.pw.active{display:block}
+.pl{font-size:12.5px;color:var(--soft);margin-bottom:6px;font-family:var(--mono)}
+.pt{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.pf{height:100%;width:0;background:var(--maroon);transition:width .2s}
+.banner{border-radius:8px;padding:11px 14px;font-size:13px;margin-top:14px;display:none}
+.banner.active{display:block}
+.banner.err{background:var(--errw);color:var(--err);border:1px solid #EFC7C0}
+.banner.warn{background:#FBF3E4;color:#8A5A12;border:1px solid #F0DBAE}
+.rh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.rh h2{margin:0}
+.ra{display:flex;gap:8px}
+.ra button{font-size:12.5px;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600;font-family:var(--sans)}
+.rs{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:var(--soft);font-size:11px;padding:8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff}
+td{padding:9px 8px;border-bottom:1px solid #F0EDE6;font-family:var(--mono);vertical-align:top;word-break:break-all}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-family:var(--sans);font-weight:600}
+.pill.pending{background:#F0EDE6;color:var(--soft)}
+.pill.ok{background:var(--okw);color:var(--ok)}
+.pill.error{background:var(--errw);color:var(--err)}
+.aff{color:var(--maroon);font-weight:600;text-decoration:none}
+.note{font-size:12px;color:var(--soft);margin-top:10px}
+footer{margin-top:28px;text-align:center;color:var(--soft);font-size:12px}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <header class="page-head">
-    <p class="eyebrow">Rokomari &middot; Affiliate Tools</p>
-    <h1>একসাথে অনেক অ্যাফিলিয়েট লিংক তৈরি করুন</h1>
-    <p class="sub">রকমারির প্রোডাক্ট লিংকের তালিকাকে এক ক্লিকেই অ্যাফিলিয়েট লিংকে রূপান্তর করুন। সব কিছু আপনার ব্রাউজারেই চলে — আপনার token কখনো এই পেজ ছেড়ে যায় না।</p>
-  </header>
+<p class="eyebrow">Rokomari &middot; Affiliate Tools</p>
+<h1>একসাথে অনেক অ্যাফিলিয়েট লিংক তৈরি করুন</h1>
+<p class="sub">রকমারির প্রোডাক্ট ও বইয়ের লিংকের তালিকাকে এক ক্লিকেই অ্যাফিলিয়েট লিংকে রূপান্তর করুন। সব কিছু আপনার ব্রাউজারেই চলে।</p>
 
-  <!-- FIRECRAWL CALLOUT -->
-  <div class="card firecrawl-card">
-    <div class="fc-row">
-      <div class="fc-text">
-        <h2>আগে প্রোডাক্ট লিংক দরকার?</h2>
-        <p>যদি আপনার কাছে এখনো লিংকের তালিকা না থাকে, Firecrawl একটি request-এই রকমারির যেকোনো category বা brand পেজ থেকে সব প্রোডাক্ট URL বের করে দিতে পারে।</p>
-      </div>
-      <a class="fc-link" href="https://www.firecrawl.dev" target="_blank" rel="noopener">Firecrawl খুলুন ↗</a>
-    </div>
-    <details class="guide">
-      <summary>Firecrawl দিয়ে প্রোডাক্ট লিংক সংগ্রহ করবেন যেভাবে</summary>
-      <div class="guide-body">
-        <ol>
-          <li>firecrawl.dev-এ একটি ফ্রি account খুলুন — ফ্রি tier-এ মাসে ১,০০০ credit পাওয়া যায়, যা এই কাজের জন্য যথেষ্ট।</li>
-          <li>Dashboard থেকে নিজের API key নিন (শুরু হয় <code>fc-</code> দিয়ে)।</li>
-          <li>রকমারির কোনো category বা brand পেজে <strong>Map</strong> endpoint ব্যবহার করুন — এটি সেই পেজের সব link এক request-এই ফেরত দেয় (মাত্র ১ credit খরচ হয়), পুরো পেজ scrape না করেই।</li>
-          <li>ফলাফল থেকে শুধু <code>/product/</code> থাকা link গুলো বেছে নিন — সেগুলোই নিচে পেস্ট করার জন্য।</li>
-        </ol>
-        <div class="code-block">curl https://api.firecrawl.dev/v2/map \
+<div class="card fc">
+  <h2>আগে প্রোডাক্ট লিংক দরকার?</h2>
+  <p>লিংকের তালিকা না থাকলে Firecrawl দিয়ে রকমারির category বা brand পেজ থেকে সব লিংক বের করে নিতে পারেন।</p>
+  <a class="fc-link" href="https://www.firecrawl.dev" target="_blank" rel="noopener">Firecrawl খুলুন ↗</a>
+  <details>
+    <summary>Firecrawl দিয়ে লিংক সংগ্রহের নিয়ম</summary>
+    <div class="gb">
+      <ol>
+        <li>firecrawl.dev-এ ফ্রি account খুলুন এবং Dashboard থেকে API key নিন (শুরু হয় <code>fc-</code> দিয়ে)।</li>
+        <li>রকমারির category বা brand পেজে <strong>Map</strong> endpoint চালান (১ credit খরচ)।</li>
+        <li>ফলাফল থেকে শুধু <code>/product/</code> বা <code>/book/</code> থাকা লিংকগুলো নিচে পেস্ট করুন।</li>
+      </ol>
+      <div class="code-block">curl https://api.firecrawl.dev/v2/map \
   -H "Authorization: Bearer fc-your-key" \
   -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://www.rokomari.com/category-brand/2355/Nivea/12692",
-    "search": "product"
-  }'</div>
-        <p style="margin-top:8px;">অনেক পেজ থাকা কোনো পুরো category-র জন্য এর বদলে <strong>Crawl</strong> endpoint ব্যবহার করুন, সাথে <code>includePaths: ["/product/*"]</code> ও একটা page <code>limit</code> সেট করে দিন। মনে রাখবেন: Firecrawl অনেক anti-bot সুরক্ষা ভালোভাবে সামলাতে পারে, কিন্তু সব সময় ১০০% নিশ্চয়তা দেয় না — কোনো পেজ ব্যর্থ হলে আবার চেষ্টা করুন, অথবা R&D টিমের কাছে internal export চেয়ে দেখুন।</p>
-      </div>
-    </details>
-  </div>
-
-  <!-- STEP 1: TOKEN -->
-  <div class="card">
-    <h2><span class="step-num">1</span> আপনার অ্যাফিলিয়েট Token</h2>
-    <p class="hint">এটি প্রমাণ করে যে সত্যিই আপনার নিজের অ্যাফিলিয়েট account থেকেই লিংকগুলো তৈরি হচ্ছে। এটি শুধু এই পেজেই, লোকালি বসানো হয়।</p>
-    <label class="field-label" for="tokenInput">Bearer token</label>
-    <div class="token-row">
-      <input type="password" id="tokenInput" placeholder="eyJhbGciOiJIUzI1NiIs..." autocomplete="off" />
-      <button class="ghost-btn" id="toggleTokenBtn" type="button">দেখান</button>
+  -d '{"url":"https://www.rokomari.com/category-brand/2355/Nivea/12692","search":"product"}'</div>
     </div>
-    <details class="guide">
-      <summary>Token কোথায় পাব?</summary>
-      <div class="guide-body">
-        <ol>
-          <li>Chrome বা Firefox-এ <a href="https://affiliate.rokomari.io" target="_blank" rel="noopener">affiliate.rokomari.io</a>-তে log in করুন।</li>
-          <li><strong>F12</strong> চাপুন (অথবা যেকোনো জায়গায় right-click করে Inspect করুন) — Developer Tools খুলবে, তারপর <strong>Network</strong> ট্যাবে যান।</li>
-          <li>Network প্যানেলের উপরে filter বক্সে <code>createCustomURL</code> লিখুন।</li>
-          <li>Dashboard-এ ফিরে গিয়ে স্বাভাবিকভাবে একটি অ্যাফিলিয়েট লিংক generate করুন — একটি প্রোডাক্ট লিংক পেস্ট করে Generate-এ ক্লিক করুন।</li>
-          <li>Network প্যানেলে <code>createCustomURL</code> নামের একটি request দেখা যাবে। সেটাতে ক্লিক করুন।</li>
-          <li>এর <strong>Headers</strong> ট্যাবে গিয়ে খুঁজুন <code>Authorization: Bearer eyJ...</code></li>
-          <li>"Bearer " শব্দটির পরের পুরো অংশটুকু কপি করে উপরের বক্সে পেস্ট করুন।</li>
-        </ol>
-        <p>এই token-এর মেয়াদ প্রায় এক সপ্তাহ পর শেষ হয়ে যায়। নিচে লিংক তৈরি করা হঠাৎ বন্ধ হয়ে গেলে, একই নিয়মে এখানে ফিরে এসে একটি নতুন token নিন।</p>
-      </div>
-    </details>
-    <p class="privacy-note">🔒 এই token শুধু আপনার browser থেকে সরাসরি রকমারির অ্যাফিলিয়েট API কল করতেই ব্যবহৃত হয়। এই ট্যাব বন্ধ করার পর এটি আর কোথাও থাকে না, এবং আমাদের কাছেও পাঠানো হয় না।</p>
+  </details>
+</div>
+
+<div class="card">
+  <h2><span class="num">1</span> আপনার অ্যাফিলিয়েট Token</h2>
+  <p class="hint">এটি প্রমাণ করে লিংকগুলো আপনার নিজের অ্যাফিলিয়েট account থেকে তৈরি হচ্ছে।</p>
+  <label class="fl" for="tokenInput">Bearer token</label>
+  <div class="trow">
+    <input type="password" id="tokenInput" placeholder="eyJhbGciOiJIUzI1NiIs..." autocomplete="off" />
+    <button class="ghost" id="toggleTokenBtn" type="button">দেখান</button>
   </div>
-
-  <!-- STEP 2: LINKS -->
-  <div class="card">
-    <h2><span class="step-num">2</span> আপনার প্রোডাক্ট লিংক</h2>
-    <p class="hint">সরাসরি লিংক পেস্ট করুন, অথবা একটি CSV / Excel / text ফাইল আপলোড করুন — অন্য column বা লেখার সাথে লিংক মিশে থাকলেও, সেগুলো নিজে থেকেই আলাদা করে নেওয়া হবে।</p>
-
-    <label class="field-label" for="linksInput">লিংক পেস্ট করুন</label>
-    <textarea id="linksInput" placeholder="https://www.rokomari.com/product/404994/mamaearth-onion-hair-oil-100ml
-https://www.rokomari.com/product/375405/nivea-soft-light-moisturising-cream-100ml-42204091
-..."></textarea>
-
-    <div class="or-divider">অথবা</div>
-
-    <label class="file-drop" id="fileDropLabel">
-      <span id="fileDropText">.csv, .xlsx, বা .txt ফাইল আপলোড করতে ক্লিক করুন</span>
-      <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt" />
-    </label>
-
-    <div class="found-line">
-      <span><strong id="foundCount">0</strong> টি প্রোডাক্ট লিংক পাওয়া গেছে</span>
-      <button class="clear-link" id="clearBtn" type="button">সব মুছুন</button>
+  <details>
+    <summary>Token কোথায় পাব?</summary>
+    <div class="gb">
+      <ol>
+        <li>কম্পিউটারের Chrome-এ <a href="https://affiliate.rokomari.io" target="_blank" rel="noopener">affiliate.rokomari.io</a>-তে log in করুন।</li>
+        <li><strong>F12</strong> চেপে Developer Tools খুলুন, তারপর <strong>Network</strong> ট্যাবে যান।</li>
+        <li>Filter বক্সে <code>createCustomURL</code> লিখুন।</li>
+        <li>Dashboard-এ একটি অ্যাফিলিয়েট লিংক generate করুন।</li>
+        <li>Network-এ <code>createCustomURL</code> request-এ চাপুন, <strong>Headers</strong> ট্যাবে <code>Authorization: Bearer eyJ...</code> খুঁজুন।</li>
+        <li>"Bearer " এর পরের পুরো অংশ কপি করে উপরের বক্সে পেস্ট করুন।</li>
+      </ol>
+      <p>Token-এর মেয়াদ প্রায় এক সপ্তাহ। লিংক তৈরি হঠাৎ বন্ধ হলে নতুন token নিন।</p>
     </div>
+  </details>
+  <p class="note">🔒 Token শুধু আপনার browser থেকে সরাসরি রকমারির API কল করতে ব্যবহৃত হয়, কোথাও জমা হয় না।</p>
+</div>
+
+<div class="card">
+  <h2><span class="num">2</span> আপনার প্রোডাক্ট লিংক</h2>
+  <p class="hint">লিংক পেস্ট করুন অথবা CSV / Excel / text ফাইল আপলোড করুন। অন্য লেখার সাথে মিশে থাকলেও লিংক আলাদা করে নেওয়া হবে।</p>
+  <label class="fl" for="linksInput">লিংক পেস্ট করুন</label>
+  <textarea id="linksInput" placeholder="https://www.rokomari.com/book/346685/shesher-kabita
+https://www.rokomari.com/product/404994/mamaearth-onion-hair-oil-100ml"></textarea>
+  <div class="or">অথবা</div>
+  <label class="drop"><span id="fileDropText">.csv, .xlsx, বা .txt ফাইল আপলোড করতে ক্লিক করুন</span>
+    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt" />
+  </label>
+  <div class="found">
+    <span><strong id="foundCount">0</strong> টি লিংক পাওয়া গেছে</span>
+    <button class="clear" id="clearBtn" type="button">সব মুছুন</button>
   </div>
+</div>
 
-  <!-- STEP 3: GENERATE -->
-  <div class="card">
-    <h2><span class="step-num">3</span> লিংক তৈরি করুন</h2>
-    <p class="hint">এটি প্রতিটি প্রোডাক্ট লিংকের জন্য একবার করে রকমারির অ্যাফিলিয়েট API কল করে, প্রতিটির মাঝে সামান্য বিরতি দিয়ে — যাতে rate-limit না হয়।</p>
-    <button class="primary-btn" id="generateBtn" disabled>প্রথমে token ও কিছু লিংক যোগ করুন</button>
-
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-label" id="progressLabel">তৈরি হচ্ছে 0 / 0</div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-    </div>
-
-    <div class="banner err" id="errBanner"></div>
-    <div class="banner warn" id="warnBanner"></div>
+<div class="card">
+  <h2><span class="num">3</span> লিংক তৈরি করুন</h2>
+  <p class="hint">প্রতিটি লিংকের জন্য একবার করে API কল হয়, মাঝে সামান্য বিরতি দিয়ে, যাতে rate-limit না হয়।</p>
+  <button class="primary" id="generateBtn" disabled>প্রথমে token ও কিছু লিংক যোগ করুন</button>
+  <div class="pw" id="progressWrap">
+    <div class="pl" id="progressLabel">তৈরি হচ্ছে 0 / 0</div>
+    <div class="pt"><div class="pf" id="progressFill"></div></div>
   </div>
+  <div class="banner err" id="errBanner"></div>
+  <div class="banner warn" id="warnBanner"></div>
+</div>
 
-  <!-- RESULTS -->
-  <div class="card" id="resultsCard" style="display:none;">
-    <div class="results-head">
-      <h2 style="font-size:14.5px;margin:0;">ফলাফল</h2>
-      <div class="results-actions">
-        <button id="copyAllBtn">সব কপি করুন</button>
-        <button id="downloadBtn">CSV ডাউনলোড করুন</button>
-      </div>
-    </div>
-    <div class="results-scroll">
-      <table>
-        <thead>
-          <tr><th style="width:40%">প্রোডাক্ট লিংক</th><th style="width:40%">অ্যাফিলিয়েট লিংক</th><th>স্ট্যাটাস</th></tr>
-        </thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
+<div class="card" id="resultsCard" style="display:none">
+  <div class="rh">
+    <h2>ফলাফল</h2>
+    <div class="ra">
+      <button id="copyAllBtn">সব কপি করুন</button>
+      <button id="downloadBtn">CSV ডাউনলোড</button>
     </div>
   </div>
+  <div class="rs">
+    <table>
+      <thead><tr><th style="width:38%">প্রোডাক্ট লিংক</th><th style="width:38%">অ্যাফিলিয়েট লিংক</th><th>স্ট্যাটাস</th></tr></thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+  </div>
+</div>
 
-  <footer>
-    রকমারি অ্যাফিলিয়েটদের জন্য internal টুল &middot; সম্পূর্ণভাবে আপনার browser-এই চলে
-  </footer>
-
+<footer>রকমারি অ্যাফিলিয়েটদের জন্য টুল &middot; সম্পূর্ণ আপনার browser-এই চলে</footer>
 </div>
 
 <script>
 (function(){
-  const tokenInput = document.getElementById('tokenInput');
-  const toggleTokenBtn = document.getElementById('toggleTokenBtn');
-  const linksInput = document.getElementById('linksInput');
-  const fileInput = document.getElementById('fileInput');
-  const fileDropText = document.getElementById('fileDropText');
-  const foundCount = document.getElementById('foundCount');
-  const clearBtn = document.getElementById('clearBtn');
-  const generateBtn = document.getElementById('generateBtn');
-  const progressWrap = document.getElementById('progressWrap');
-  const progressLabel = document.getElementById('progressLabel');
-  const progressFill = document.getElementById('progressFill');
-  const errBanner = document.getElementById('errBanner');
-  const warnBanner = document.getElementById('warnBanner');
-  const resultsCard = document.getElementById('resultsCard');
-  const resultsBody = document.getElementById('resultsBody');
-  const copyAllBtn = document.getElementById('copyAllBtn');
-  const downloadBtn = document.getElementById('downloadBtn');
+  var $ = function(id){ return document.getElementById(id); };
+  var tokenInput=$('tokenInput'), toggleTokenBtn=$('toggleTokenBtn'), linksInput=$('linksInput'),
+      fileInput=$('fileInput'), fileDropText=$('fileDropText'), foundCount=$('foundCount'),
+      clearBtn=$('clearBtn'), generateBtn=$('generateBtn'), progressWrap=$('progressWrap'),
+      progressLabel=$('progressLabel'), progressFill=$('progressFill'), errBanner=$('errBanner'),
+      warnBanner=$('warnBanner'), resultsCard=$('resultsCard'), resultsBody=$('resultsBody'),
+      copyAllBtn=$('copyAllBtn'), downloadBtn=$('downloadBtn');
 
-  const URL_RE = /https?:\/\/(?:www\.)?rokomari\.com\/product\/\d+\/[A-Za-z0-9\-]+/g;
-  const API_URL = 'https://affiliateback.rokomari.io/lnk/createCustomURL';
-  const SHORT_LINK_RE = /https?:\/\/rkmri\.co\/[A-Za-z0-9]+\/?/;
+  // /product/ এবং /book/ দুই ধরনের লিংক চিনবে
+  var URL_RE = /https?:\/\/(?:www\.)?rokomari\.com\/(?:product|book)\/\d+\/[A-Za-z0-9\-_%]+/g;
+  var API_URL = 'https://affiliateback.rokomari.io/lnk/createCustomURL';
+  var SHORT_LINK_RE = /https?:\/\/rkmri\.co\/[A-Za-z0-9]+\/?/;
+  var DELAY_MS = 800;
 
-  let extractedLinks = [];
-  let uploadedText = ''; // extra text pulled from a file, merged with textarea
+  var extractedLinks = [];
+  var uploadedText = '';
+  var results = [];
+  var running = false;
 
-  function hideBanners(){
-    errBanner.classList.remove('active');
-    warnBanner.classList.remove('active');
-  }
-  function showErr(msg){ errBanner.textContent = msg; errBanner.classList.add('active'); }
-  function showWarn(msg){ warnBanner.textContent = msg; warnBanner.classList.add('active'); }
+  function hideBanners(){ errBanner.classList.remove('active'); warnBanner.classList.remove('active'); }
+  function showErr(m){ errBanner.textContent = m; errBanner.classList.add('active'); }
+  function showWarn(m){ warnBanner.textContent = m; warnBanner.classList.add('active'); }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
   function refreshExtracted(){
-    const combined = linksInput.value + '\n' + uploadedText;
-    const matches = combined.match(URL_RE) || [];
+    var combined = linksInput.value + '\n' + uploadedText;
+    var matches = combined.match(URL_RE) || [];
     extractedLinks = Array.from(new Set(matches));
     foundCount.textContent = extractedLinks.length;
     updateGenerateState();
   }
 
   function updateGenerateState(){
-    const hasToken = tokenInput.value.trim().length > 20;
-    const hasLinks = extractedLinks.length > 0;
+    if (running) return;
+    var hasToken = tokenInput.value.trim().length > 20;
+    var hasLinks = extractedLinks.length > 0;
     generateBtn.disabled = !(hasToken && hasLinks);
-    if (!hasToken && !hasLinks){
-      generateBtn.textContent = 'প্রথমে token ও কিছু লিংক যোগ করুন';
-    } else if (!hasToken){
-      generateBtn.textContent = 'উপরে আপনার অ্যাফিলিয়েট token যোগ করুন';
-    } else if (!hasLinks){
-      generateBtn.textContent = 'উপরে কিছু প্রোডাক্ট লিংক যোগ করুন';
-    } else {
-      generateBtn.textContent = `${extractedLinks.length} টি অ্যাফিলিয়েট লিংক তৈরি করুন`;
-    }
+    if (!hasToken && !hasLinks) generateBtn.textContent = 'প্রথমে token ও কিছু লিংক যোগ করুন';
+    else if (!hasToken) generateBtn.textContent = 'উপরে আপনার অ্যাফিলিয়েট token যোগ করুন';
+    else if (!hasLinks) generateBtn.textContent = 'উপরে কিছু লিংক যোগ করুন';
+    else generateBtn.textContent = extractedLinks.length + ' টি অ্যাফিলিয়েট লিংক তৈরি করুন';
   }
 
   toggleTokenBtn.addEventListener('click', function(){
-    const isPw = tokenInput.type === 'password';
+    var isPw = tokenInput.type === 'password';
     tokenInput.type = isPw ? 'text' : 'password';
     toggleTokenBtn.textContent = isPw ? 'লুকান' : 'দেখান';
   });
-
   tokenInput.addEventListener('input', updateGenerateState);
   linksInput.addEventListener('input', refreshExtracted);
 
@@ -500,26 +229,27 @@ https://www.rokomari.com/product/375405/nivea-soft-light-moisturising-cream-100m
     uploadedText = '';
     fileInput.value = '';
     fileDropText.textContent = '.csv, .xlsx, বা .txt ফাইল আপলোড করতে ক্লিক করুন';
+    hideBanners();
     refreshExtracted();
   });
 
   fileInput.addEventListener('change', function(e){
-    const file = e.target.files[0];
+    var file = e.target.files[0];
     if (!file) return;
-    fileDropText.textContent = `লোড হয়েছে: ${file.name}`;
-    const name = file.name.toLowerCase();
+    fileDropText.textContent = 'লোড হয়েছে: ' + file.name;
+    var name = file.name.toLowerCase();
+    var reader = new FileReader();
 
     if (name.endsWith('.xlsx') || name.endsWith('.xls')){
-      const reader = new FileReader();
       reader.onload = function(evt){
         try {
-          const wb = XLSX.read(evt.target.result, {type:'array'});
-          let allText = '';
-          wb.SheetNames.forEach(sn => {
-            const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], {header:1});
-            rows.forEach(r => { allText += r.join(' ') + '\n'; });
+          var wb = XLSX.read(evt.target.result, {type:'array'});
+          var all = '';
+          wb.SheetNames.forEach(function(sn){
+            var rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], {header:1});
+            rows.forEach(function(r){ all += r.join(' ') + '\n'; });
           });
-          uploadedText = allText;
+          uploadedText = all;
           refreshExtracted();
         } catch(err){
           showErr('এই Excel ফাইলটি পড়া যায়নি: ' + err.message);
@@ -527,16 +257,169 @@ https://www.rokomari.com/product/375405/nivea-soft-light-moisturising-cream-100m
       };
       reader.readAsArrayBuffer(file);
     } else if (name.endsWith('.csv')){
-      const reader = new FileReader();
       reader.onload = function(evt){
         Papa.parse(evt.target.result, {
           complete: function(res){
-            uploadedText = res.data.map(row => row.join(' ')).join('\n');
+            uploadedText = res.data.map(function(row){ return row.join(' '); }).join('\n');
             refreshExtracted();
           }
         });
       };
       reader.readAsText(file);
     } else {
-      const reader = new FileReader();
-      reader.onload = 
+      reader.onload = function(evt){
+        uploadedText = String(evt.target.result || '');
+        refreshExtracted();
+      };
+      reader.readAsText(file);
+    }
+  });
+
+  function renderResults(){
+    resultsCard.style.display = 'block';
+    resultsBody.innerHTML = '';
+    results.forEach(function(r){
+      var tr = document.createElement('tr');
+
+      var td1 = document.createElement('td');
+      td1.textContent = r.url;
+
+      var td2 = document.createElement('td');
+      if (r.short){
+        var a = document.createElement('a');
+        a.className = 'aff';
+        a.href = r.short;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = r.short;
+        td2.appendChild(a);
+      } else {
+        td2.textContent = '—';
+      }
+
+      var td3 = document.createElement('td');
+      var pill = document.createElement('span');
+      pill.className = 'pill ' + r.status;
+      pill.textContent = r.status === 'ok' ? 'সফল' : (r.status === 'error' ? 'ব্যর্থ' : 'অপেক্ষায়');
+      if (r.status === 'error' && r.msg) pill.title = r.msg;
+      td3.appendChild(pill);
+      if (r.status === 'error' && r.msg){
+        var m = document.createElement('div');
+        m.style.cssText = 'font-family:var(--sans);font-size:11px;color:var(--err);margin-top:3px';
+        m.textContent = r.msg;
+        td3.appendChild(m);
+      }
+
+      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+      resultsBody.appendChild(tr);
+    });
+  }
+
+  async function createLink(link, token){
+    var res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ url: link })
+    });
+    var text = await res.text();
+    if (res.status === 401 || res.status === 403){
+      var e = new Error('Token মেয়াদোত্তীর্ণ বা ভুল (HTTP ' + res.status + ')');
+      e.fatal = true;
+      throw e;
+    }
+    if (!res.ok) throw new Error('HTTP ' + res.status + ': ' + text.slice(0, 120));
+    var m = text.match(SHORT_LINK_RE);
+    if (!m) throw new Error('Response-এ ছোট লিংক পাওয়া যায়নি: ' + text.slice(0, 120));
+    return m[0];
+  }
+
+  generateBtn.addEventListener('click', async function(){
+    if (running) return;
+    hideBanners();
+    var token = tokenInput.value.trim().replace(/^Bearer\s+/i, '');
+    var links = extractedLinks.slice();
+    results = links.map(function(u){ return {url:u, short:'', status:'pending', msg:''}; });
+    renderResults();
+
+    running = true;
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'তৈরি হচ্ছে...';
+    progressWrap.classList.add('active');
+
+    var done = 0, okCount = 0, stopped = false;
+    for (var i = 0; i < links.length; i++){
+      progressLabel.textContent = 'তৈরি হচ্ছে ' + i + ' / ' + links.length;
+      progressFill.style.width = (i / links.length * 100) + '%';
+      try {
+        results[i].short = await createLink(links[i], token);
+        results[i].status = 'ok';
+        okCount++;
+      } catch(err){
+        results[i].status = 'error';
+        var msg = err.message || 'অজানা সমস্যা';
+        if (err instanceof TypeError){
+          msg = 'নেটওয়ার্ক বা CORS সমস্যা: রকমারির সার্ভার ব্রাউজার থেকে কল গ্রহণ করছে না';
+        }
+        results[i].msg = msg;
+        if (err.fatal){
+          stopped = true;
+          showErr(msg + '। নতুন token নিয়ে আবার চেষ্টা করুন।');
+          renderResults();
+          break;
+        }
+      }
+      done++;
+      renderResults();
+      if (i < links.length - 1) await sleep(DELAY_MS);
+    }
+
+    progressFill.style.width = (done / links.length * 100) + '%';
+    progressLabel.textContent = 'সম্পন্ন ' + done + ' / ' + links.length;
+    if (!stopped && okCount < links.length){
+      showWarn(okCount + ' টি সফল, ' + (links.length - okCount) + ' টি ব্যর্থ। ব্যর্থ সারির স্ট্যাটাসে কারণ দেখুন।');
+    }
+    running = false;
+    updateGenerateState();
+  });
+
+  copyAllBtn.addEventListener('click', function(){
+    var text = results.filter(function(r){ return r.short; }).map(function(r){ return r.short; }).join('\n');
+    if (!text){ showWarn('কপি করার মতো কোনো লিংক এখনো নেই।'); return; }
+    function done(){ copyAllBtn.textContent = 'কপি হয়েছে ✓'; setTimeout(function(){ copyAllBtn.textContent = 'সব কপি করুন'; }, 1500); }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text); done(); });
+    } else { fallbackCopy(text); done(); }
+  });
+
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  downloadBtn.addEventListener('click', function(){
+    if (!results.length) return;
+    function q(s){ return '"' + String(s || '').replace(/"/g, '""') + '"'; }
+    var lines = ['Product Link,Affiliate Link,Status'];
+    results.forEach(function(r){ lines.push([q(r.url), q(r.short), q(r.status)].join(',')); });
+    var blob = new Blob(['\uFEFF' + lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'rokomari_affiliate_links.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  });
+
+  refreshExtracted();
+})();
+</script>
+</body>
+</html>
