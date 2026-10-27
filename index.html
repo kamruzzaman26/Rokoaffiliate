@@ -322,7 +322,7 @@ https://www.rokomari.com/product/404994/mamaearth-onion-hair-oil-100ml"></textar
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + token
       },
-      body: JSON.stringify({ url: link })
+      body: JSON.stringify({ originalURL: link })
     });
     var text = await res.text();
     if (res.status === 401 || res.status === 403){
